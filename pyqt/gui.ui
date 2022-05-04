@@ -1,0 +1,405 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>2002</width>
+    <height>883</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QLineEdit" name="input_path">
+    <property name="geometry">
+     <rect>
+      <x>120</x>
+      <y>10</y>
+      <width>231</width>
+      <height>21</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>10</y>
+      <width>91</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>图片路径:</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btn_begin">
+    <property name="geometry">
+     <rect>
+      <x>370</x>
+      <y>10</y>
+      <width>93</width>
+      <height>28</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>启动</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_2">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>40</y>
+      <width>91</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>启动模式:</string>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="comboBox">
+    <property name="geometry">
+     <rect>
+      <x>120</x>
+      <y>40</y>
+      <width>231</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <item>
+     <property name="text">
+      <string>DGT_DerainNet_Faster_RCNN</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>DerainNet_Faster_RCNN</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Faster_RCNN</string>
+     </property>
+    </item>
+   </widget>
+   <widget class="QLabel" name="label_3">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>70</y>
+      <width>91</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>图像修复输出:</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="checkBox">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>130</x>
+      <y>70</y>
+      <width>91</width>
+      <height>19</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="checkable">
+     <bool>true</bool>
+    </property>
+    <property name="checked">
+     <bool>false</bool>
+    </property>
+   </widget>
+   <widget class="QWidget" name="layoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>100</y>
+      <width>1041</width>
+      <height>411</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QGraphicsView" name="graphic_res"/>
+     </item>
+     <item>
+      <widget class="QGraphicsView" name="graphics_derain"/>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QWidget" name="layoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>540</x>
+      <y>10</y>
+      <width>295</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>monodepth2算法预测深度图:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="depth_btn">
+       <property name="text">
+        <string>深度估计</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QPushButton" name="pB_next">
+    <property name="geometry">
+     <rect>
+      <x>870</x>
+      <y>530</y>
+      <width>40</width>
+      <height>40</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>↓</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pB_previous">
+    <property name="geometry">
+     <rect>
+      <x>800</x>
+      <y>530</y>
+      <width>40</width>
+      <height>40</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>↑</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_5">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>540</y>
+      <width>72</width>
+      <height>15</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>类别：</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_class">
+    <property name="geometry">
+     <rect>
+      <x>80</x>
+      <y>530</y>
+      <width>101</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QScrollArea" name="scrollArea">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>580</y>
+      <width>1031</width>
+      <height>201</height>
+     </rect>
+    </property>
+    <property name="widgetResizable">
+     <bool>true</bool>
+    </property>
+    <widget class="QWidget" name="scrollAreaWidgetContents">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>0</y>
+       <width>1029</width>
+       <height>199</height>
+      </rect>
+     </property>
+    </widget>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>2002</width>
+     <height>26</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuss">
+    <property name="title">
+     <string>测试集</string>
+    </property>
+    <addaction name="action_rain_kitti"/>
+    <addaction name="separator"/>
+    <addaction name="action_rain_cityscape"/>
+    <addaction name="separator"/>
+    <addaction name="action_real_world"/>
+   </widget>
+   <widget class="QMenu" name="menu">
+    <property name="title">
+     <string>训练模型</string>
+    </property>
+    <addaction name="action_model_kitti"/>
+    <addaction name="separator"/>
+    <addaction name="action_model_cityscapes"/>
+    <addaction name="separator"/>
+   </widget>
+   <widget class="QMenu" name="menu_2">
+    <property name="title">
+     <string>选项</string>
+    </property>
+   </widget>
+   <addaction name="menuss"/>
+   <addaction name="menu"/>
+   <addaction name="menu_2"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QDockWidget" name="dockWidget_3">
+   <property name="windowTitle">
+    <string>图片</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_5">
+    <layout class="QGridLayout" name="gridLayout_20">
+     <item row="0" column="0">
+      <widget class="QListWidget" name="listWidget_image">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Sunken</enum>
+       </property>
+       <property name="autoScroll">
+        <bool>true</bool>
+       </property>
+       <property name="showDropIndicator" stdset="0">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QDockWidget" name="dockWidget_7">
+       <property name="windowTitle">
+        <string>检测信息</string>
+       </property>
+       <widget class="QWidget" name="dockWidgetContents_7">
+        <layout class="QGridLayout" name="gridLayout_22">
+         <item row="0" column="0">
+          <widget class="QTableWidget" name="tab_class_num">
+           <property name="alternatingRowColors">
+            <bool>true</bool>
+           </property>
+           <attribute name="horizontalHeaderStretchLastSection">
+            <bool>true</bool>
+           </attribute>
+           <column>
+            <property name="text">
+             <string>类别</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>数量</string>
+            </property>
+           </column>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dockWidget_6">
+   <property name="windowTitle">
+    <string>原始图片</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_6">
+    <layout class="QGridLayout" name="gridLayout_21">
+     <item row="0" column="0">
+      <widget class="QGraphicsView" name="graphics_input"/>
+     </item>
+     <item row="1" column="0">
+      <widget class="QDockWidget" name="dockWidget_8">
+       <property name="windowTitle">
+        <string>先验深度图</string>
+       </property>
+       <widget class="QWidget" name="dockWidgetContents_8">
+        <layout class="QGridLayout" name="gridLayout_23">
+         <item row="0" column="0">
+          <widget class="QGraphicsView" name="graphics_depth"/>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <action name="action_rain_kitti">
+   <property name="text">
+    <string>rain_kitti</string>
+   </property>
+  </action>
+  <action name="action_rain_cityscape">
+   <property name="text">
+    <string>rain_cityscapes</string>
+   </property>
+  </action>
+  <action name="actionreal_world">
+   <property name="text">
+    <string>real_world</string>
+   </property>
+  </action>
+  <action name="action_model_kitti">
+   <property name="text">
+    <string>kitti</string>
+   </property>
+  </action>
+  <action name="action_model_cityscapes">
+   <property name="text">
+    <string>cityscape</string>
+   </property>
+  </action>
+  <action name="action_real_world">
+   <property name="text">
+    <string>real_world</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

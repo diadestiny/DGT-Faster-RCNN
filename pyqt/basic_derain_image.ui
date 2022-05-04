@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1536</width>
+    <height>689</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <widget class="QDockWidget" name="dockWidget_raw">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>70</y>
+     <width>631</width>
+     <height>491</height>
+    </rect>
+   </property>
+   <property name="windowTitle">
+    <string>Derain_FasterRCNN检测</string>
+   </property>
+   <widget class="QWidget" name="dockWidgetContents_7">
+    <layout class="QGridLayout" name="gridLayout_22">
+     <item row="0" column="0">
+      <widget class="QGraphicsView" name="graphics_derain_detect"/>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dockWidget_baseline">
+   <property name="geometry">
+    <rect>
+     <x>700</x>
+     <y>70</y>
+     <width>681</width>
+     <height>491</height>
+    </rect>
+   </property>
+   <property name="windowTitle">
+    <string>Derain图像修复</string>
+   </property>
+   <widget class="QWidget" name="dockWidgetContents_9">
+    <layout class="QGridLayout" name="gridLayout_24">
+     <item row="0" column="0">
+      <widget class="QGraphicsView" name="graphics_derain_restore"/>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
