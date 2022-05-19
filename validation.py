@@ -163,9 +163,7 @@ def main(parser_data):
             outputs = [{k: v.to(cpu_device) for k, v in t.items()} for t in outputs]
             res = {target["image_id"].item(): output for target, output in zip(targets, outputs)}
             coco_evaluator.update(res)
-
     coco_evaluator.synchronize_between_processes()
-
     # accumulate predictions from all images
     coco_evaluator.accumulate()
     coco_evaluator.summarize()

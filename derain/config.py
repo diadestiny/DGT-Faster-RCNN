@@ -1,7 +1,7 @@
 # coding: utf-8
 import os
 
-dataset_dir = '../../VOCdevkit_kitti/VOC2012'
+dataset_dir = '../../VOCdevkit/VOC2012'
 
 
 
