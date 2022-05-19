@@ -20,10 +20,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="2362c087-11f8-491c-ab84-5ef58dc1585a" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/derain/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/derain/config.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyqt/temp_disp.npy" beforeDir="false" afterPath="$PROJECT_DIR$/pyqt/temp_disp.npy" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyqt/test_image_disp.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/pyqt/test_image_disp.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/validation.py" beforeDir="false" afterPath="$PROJECT_DIR$/validation.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/predict.py" beforeDir="false" afterPath="$PROJECT_DIR$/predict.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -200,11 +198,11 @@
       <method v="2" />
     </configuration>
     <list>
+      <item itemvalue="Python.cal_psnr_ssim_cityscapes" />
+      <item itemvalue="Python.cal_psnr_ssim_kitti (1)" />
       <item itemvalue="Python.main" />
       <item itemvalue="Python.nets" />
       <item itemvalue="Python.validation" />
-      <item itemvalue="Python.cal_psnr_ssim_kitti (1)" />
-      <item itemvalue="Python.cal_psnr_ssim_cityscapes" />
     </list>
     <recent_temporary>
       <list>
