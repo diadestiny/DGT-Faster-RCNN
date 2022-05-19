@@ -20,10 +20,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="2362c087-11f8-491c-ab84-5ef58dc1585a" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/derain/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/derain/config.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyqt/temp_disp.npy" beforeDir="false" afterPath="$PROJECT_DIR$/pyqt/temp_disp.npy" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyqt/test_image_disp.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/pyqt/test_image_disp.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/validation.py" beforeDir="false" afterPath="$PROJECT_DIR$/validation.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/predict.py" beforeDir="false" afterPath="$PROJECT_DIR$/predict.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -338,7 +336,7 @@
       <workItem from="1652670388565" duration="4015000" />
       <workItem from="1652685200094" duration="1190000" />
       <workItem from="1652770730036" duration="2385000" />
-      <workItem from="1652944306416" duration="3013000" />
+      <workItem from="1652944306416" duration="3410000" />
     </task>
     <servers />
   </component>
@@ -381,6 +379,10 @@
     </state>
     <state x="2419" y="158" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.0.1536.824/1920.0.1536.824@1920.0.1536.824" timestamp="1647671340560" />
     <state x="2544" y="199" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.0.1536.824/1920.0.1920.1040@1920.0.1920.1040" timestamp="1646026180904" />
+    <state x="2013" y="93" width="1350" height="638" key="DiffContextDialog" timestamp="1652965047733">
+      <screen x="1920" y="0" width="1536" height="824" />
+    </state>
+    <state x="2013" y="93" width="1350" height="638" key="DiffContextDialog/0.0.1536.824/1920.0.1536.824@1920.0.1536.824" timestamp="1652965047733" />
     <state x="2469" y="167" width="542" height="490" key="FileChooserDialogImpl" timestamp="1652600631185">
       <screen x="1920" y="0" width="1536" height="824" />
     </state>
