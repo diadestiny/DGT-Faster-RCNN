@@ -21,6 +21,7 @@
   <component name="ChangeListManager">
     <list default="true" id="2362c087-11f8-491c-ab84-5ef58dc1585a" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/derain/nets.py" beforeDir="false" afterPath="$PROJECT_DIR$/derain/nets.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/predict.py" beforeDir="false" afterPath="$PROJECT_DIR$/predict.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -198,11 +199,11 @@
       <method v="2" />
     </configuration>
     <list>
+      <item itemvalue="Python.cal_psnr_ssim_cityscapes" />
+      <item itemvalue="Python.cal_psnr_ssim_kitti (1)" />
       <item itemvalue="Python.main" />
       <item itemvalue="Python.nets" />
       <item itemvalue="Python.validation" />
-      <item itemvalue="Python.cal_psnr_ssim_kitti (1)" />
-      <item itemvalue="Python.cal_psnr_ssim_cityscapes" />
     </list>
     <recent_temporary>
       <list>
@@ -337,6 +338,7 @@
       <workItem from="1652685200094" duration="1190000" />
       <workItem from="1652770730036" duration="2385000" />
       <workItem from="1652944306416" duration="3410000" />
+      <workItem from="1653024643876" duration="2015000" />
     </task>
     <servers />
   </component>
@@ -546,7 +548,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/derain/nets.py</url>
-          <line>1582</line>
+          <line>680</line>
           <option name="timeStamp" value="74" />
         </line-breakpoint>
       </breakpoints>
