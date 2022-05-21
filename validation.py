@@ -2,7 +2,7 @@ import os
 # os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 from torch.autograd import Variable
 
-from derain.nets import DDGN_Basic, DDGN_Depth_CFT, DDGN_Depth, DDGN_Density, DDGN_Depth_CFT_Pred, DDGN_Depth_Pred, \
+from derain.nets import DDGN_Basic, DDGN_Depth_CFT, DDGN_Depth, DDGN_Depth_CFT_Pred, DDGN_Depth_Pred, \
     DGNLNet
 from network_files.faster_rcnn_framework import Derain_FasterRCNN
 

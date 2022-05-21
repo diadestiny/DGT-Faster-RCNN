@@ -23,21 +23,20 @@ def train_one_epoch(model, optimizer, data_loader, device, epoch,
     if epoch == 0 and warmup is True:  # 当训练第一轮（epoch=0）时，启用warmup训练方式，可理解为热身训练
         warmup_factor = 1.0 / 1000
         warmup_iters = min(1000, len(data_loader) - 1)
-
         lr_scheduler = utils.warmup_lr_scheduler(optimizer, warmup_iters, warmup_factor)
 
     mloss = torch.zeros(1).to(device)  # mean losses
     print(optimizer.param_groups[0]["lr"])
     enable_amp = True if "cuda" in device.type else False
     for i, [images, targets,rains,depths] in enumerate(metric_logger.log_every(data_loader, print_freq, header)):
-        images = list(image.to(device) for image in images)
+        # images = list(image.to(device) for image in images)
         rains = list(rain.to(device) for rain in rains)
-        depths = list(depth.to(device) for depth in depths)
+        # depths = list(depth.to(device) for depth in depths)
         targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
 
         # 混合精度训练上下文管理器，如果在CPU环境中不起任何作用
         with torch.cuda.amp.autocast(enabled=enable_amp):
-            loss_dict = model(rains=rains,targets=targets,images=images, depths=depths)
+            loss_dict = model(rains=rains,targets=targets)
             # loss_dict = model(images, targets=targets)
             losses = sum(loss for loss in loss_dict.values())
 
@@ -83,15 +82,14 @@ def evaluate(model, data_loader, device):
     for images, targets,rains,depths in metric_logger.log_every(data_loader, 100, header):
         # images = list(img.to(device) for img in images)
         rains = list(rain.to(device) for rain in rains)
-        depths = list(dp.to(device) for dp in depths)
+        # depths = list(dp.to(device) for dp in depths)
         # 当使用CPU时，跳过GPU相关指令
         if device != torch.device("cpu"):
             torch.cuda.synchronize(device)
 
         model_time = time.time()
         # outputs = model(images, targets=targets)
-        imgs,outputs = model(rains=rains,depths=depths)
-
+        imgs,outputs = model(rains=rains)
         outputs = [{k: v.to(cpu_device) for k, v in t.items()} for t in outputs]
         model_time = time.time() - model_time
 

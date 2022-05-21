@@ -669,7 +669,7 @@ class DDGN_Depth_CFT_Pred(nn.Module):
         x = (x * self.std + self.mean).clamp(min=0, max=1)
         return x, depth_pred
 
-# os.environ["CUDA_VISIBLE_DEVICES"] = '4'
+
 # device = torch.device("cuda:0")
 
 # from thop import profile
@@ -681,3 +681,6 @@ class DDGN_Depth_CFT_Pred(nn.Module):
 # flops, params = profile(model, inputs=(input.cpu(),dps.cpu()))
 # flops, params = clever_format([flops, params], "%.3f")
 # print('params:',params,'flops:',flops)
+# os.environ["CUDA_VISIBLE_DEVICES"] = '3'
+# model = DDGN_Depth_CFT_Pred()
+# model(torch.randn(1,3,512,1024))

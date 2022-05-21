@@ -11,6 +11,9 @@ import torch.nn.functional as F
 from torchvision.ops import MultiScaleRoIAlign
 
 from torchvision import transforms
+
+from backbone import resnet50_fpn_backbone
+from .depth_enhance import DEB
 from .roi_head import RoIHeads
 from .transform import GeneralizedRCNNTransform, _resize_image
 from .rpn_function import AnchorsGenerator, RPNHead, RegionProposalNetwork
@@ -29,12 +32,16 @@ class FasterRCNNBase(nn.Module):
             the models
     """
 
-    def __init__(self, backbone, rpn, roi_heads, transform):
+    def __init__(self, backbone, rpn, roi_heads, transform,depth_encoder):
         super(FasterRCNNBase, self).__init__()
         self.transform = transform
         self.backbone = backbone
         self.rpn = rpn
         self.roi_heads = roi_heads
+        self.depth_encoder = depth_encoder
+        self.dse_layer1 = DEB(channel=64, ratio=4)
+        self.dse_layer2 = DEB(channel=64, ratio=4)
+        self.dse_layer3 = DEB(channel=64, ratio=4)
         # used only on torchscript mode
         self._has_warned = False
 
@@ -46,20 +53,8 @@ class FasterRCNNBase(nn.Module):
 
         return detections
 
-    def forward(self, images, targets=None, en_features=None):
-        # type: (List[Tensor], Optional[List[Dict[str, Tensor]]],Optional[List[Tensor]]) -> Tuple[Dict[str, Tensor], List[Dict[str, Tensor]]]
-        """
-        Arguments:
-            images (list[Tensor]): images to be processed
-            targets (list[Dict[Tensor]]): ground-truth boxes present in the image (optional)
-
-        Returns:
-            result (list[BoxList] or dict[Tensor]): the output from the models.
-                During training, it returns a dict[Tensor] which contains the losses.
-                During testing, it returns list[BoxList] contains additional fields
-                like `scores`, `labels` and `mask` (for Mask R-CNN models).
-
-        """
+    def forward(self, images, targets=None,depths= None):
+        # type: (List[Tensor], Optional[List[Dict[str, Tensor]]], Optional[List[Dict[str, Tensor]]]) -> Tuple[Dict[str, Tensor], List[Dict[str, Tensor]]]
 
         if self.training and targets is None:
             raise ValueError("In training mode, targets should be passed")
@@ -86,8 +81,8 @@ class FasterRCNNBase(nn.Module):
 
         # original_image_sizes = [img.shape[-2:] for img in images]
         images, targets = self.transform(images, targets)  # 对图像进行预处理
-        # print(images.tensors.shape)
         features = self.backbone(images.tensors)  # 将图像输入backbone得到特征图
+
         if isinstance(features, torch.Tensor):  # 若只在一层特征层上预测，将feature放入有序字典中，并编号为‘0’
             features = OrderedDict([('0', features)])  # 若在多层特征层上预测，传入的就是一个有序字典
 
@@ -355,60 +350,45 @@ class FasterRCNN(FasterRCNNBase):
 
         # 对数据进行标准化，缩放，打包成batch等处理部分
         transform = GeneralizedRCNNTransform(min_size, max_size, image_mean, image_std)
-
-        super(FasterRCNN, self).__init__(backbone, rpn, roi_heads, transform)
+        depth_encoder = resnet50_fpn_backbone(norm_layer=torch.nn.BatchNorm2d,trainable_layers=3)
+        super(FasterRCNN, self).__init__(backbone, rpn, roi_heads, transform,depth_encoder)
 
 
 class Derain_FasterRCNN(nn.Module):
     def __init__(self, FasterRCNN, device, DerainNet=None):
         super(Derain_FasterRCNN, self).__init__()
         self.DerainNet = DerainNet
-        # for name, parameter in self.named_parameters():
-        #     parameter.requires_grad = False
+        for name, parameter in self.named_parameters():
+            parameter.requires_grad = False
         self.FasterRCNN = FasterRCNN
         self.device = device
-        # self.mse = nn.MSELoss()
-        # self.criterion_derain = nn.L1Loss()
-        # self.criterion_depth = nn.L1Loss()
         # for name, parameter in self.named_parameters():
         #     print(name,parameter.requires_grad)
 
-    def forward(self, rains, targets=None, images=None, depths=None, labels=None):
-        # type: (List[Tensor], Optional[List[Dict[str, Tensor]]],Optional[List[Tensor]],Optional[List[Tensor]],Optional[List[Tensor]]) -> Tuple[list, Any]
+    def forward(self, rains, targets=None):
+        # type: (List[Tensor], Optional[List[Dict[str, Tensor]]]) -> Tuple[list, Any]
 
         if self.DerainNet is None:
-            # now rains images are waiting detect images(no rain)
             return self.FasterRCNN(rains, targets)
         else:
             rain_sizes = [rain.shape[-2:] for rain in rains]
             x = self.batch_images(rains, shape_h=512, shape_w=1024, dim=3)
-            if depths is not None:
-                batch_depth = self.batch_images(depths, shape_h=512, shape_w=1024, dim=1)
-                res = self.DerainNet(x.cuda(),batch_depth.cuda())
-            else:
-                res = self.DerainNet(x.cuda())
-            img_list = list((transforms.Resize(rain_sizes[i])(img)).detach().to(self.device) for i, img in enumerate(res))
-            if self.training:
-                loss_dict= self.FasterRCNN(img_list, targets)
-                # loss_fs = self.mse(en_fea_out, backbone_fea['3'])
-                # batch_imgs = self.batch_images(images, shape_h=512, shape_w=1024, dim=3)
-                # loss_depth = self.criterion_depth(dps, batch_depth.cuda())
-                # loss_derain = self.criterion_derain(res, batch_imgs.cuda())
-                # losses = {
-                #     # "loss_fs": loss_fs,
-                #     "loss_depth": loss_depth,
-                #     "loss_derain": loss_derain
-                # }
-                # loss_dict.update(losses)
-                return loss_dict
-            else:
-                return img_list, self.FasterRCNN(img_list)
+            de_rain,depth = self.DerainNet(x.cuda())
+            de_rain_list = list((transforms.Resize(rain_sizes[i])(img)).detach().to(self.device) for i, img in enumerate(de_rain))
+            depth_list = list((transforms.Resize(rain_sizes[i])(d)).detach().to(self.device) for i, d in enumerate(depth))
+            depths,_ = self.FasterRCNN.transform(depth_list,targets)
+
             # to_pil = transforms.ToPILImage()
             # h,w = rain_sizes[0]
-            # result = transforms.Resize((h, w))(to_pil(res.data.squeeze(0).cpu()))
+            # result = transforms.Resize((h, w))(to_pil(de_rain[0].data.squeeze(0).cpu()))
             # result.save("test_derain.png")
-            # depth_res = transforms.Resize((h, w))(to_pil(depth_pred.data.squeeze(0).cpu()))
+            # depth_res = transforms.Resize((h, w))(to_pil(depth[0].data.squeeze(0).cpu()))
             # depth_res.save("test_depth.png")
+            if self.training:
+                loss_dict= self.FasterRCNN(de_rain_list, targets, depths=depths)
+                return loss_dict
+            else:
+                return de_rain_list, self.FasterRCNN(de_rain_list, depths=depths)
             # derain_en_ft =  torch.nn.functional.interpolate(derain_en_ft, size=(208,672), mode="bilinear",align_corners=False)
             # en_ft = self.SkipNet(derain_en_ft)
 
