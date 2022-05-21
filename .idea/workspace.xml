@@ -20,7 +20,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="2362c087-11f8-491c-ab84-5ef58dc1585a" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyqt/temp_disp.npy" beforeDir="false" afterPath="$PROJECT_DIR$/pyqt/temp_disp.npy" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyqt/test_image_disp.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/pyqt/test_image_disp.jpg" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -449,11 +451,11 @@
     <state width="1493" height="325" key="GridCell.Tab.1.right/0.0.1536.824/1920.0.1920.1040@0.0.1536.824" timestamp="1646086701108" />
     <state width="1162" height="344" key="GridCell.Tab.1.right/0.0.1536.824/1920.0.1920.1040@1920.0.1920.1040" timestamp="1646470400105" />
     <state width="918" height="380" key="GridCell.Tab.1.right/0.0.1536.824@0.0.1536.824" timestamp="1647178913246" />
-    <state x="2229" y="46" width="1113" height="711" key="SettingsEditor" timestamp="1652613652577">
+    <state x="2229" y="46" width="1113" height="711" key="SettingsEditor" timestamp="1653110851232">
       <screen x="1920" y="0" width="1536" height="824" />
     </state>
     <state x="309" y="46" key="SettingsEditor/0.0.1536.824/1920.0.1536.824@0.0.1536.824" timestamp="1649565503859" />
-    <state x="2229" y="46" width="1113" height="711" key="SettingsEditor/0.0.1536.824/1920.0.1536.824@1920.0.1536.824" timestamp="1652613652577" />
+    <state x="2229" y="46" width="1113" height="711" key="SettingsEditor/0.0.1536.824/1920.0.1536.824@1920.0.1536.824" timestamp="1653110851232" />
     <state x="2258" y="71" width="1491" height="712" key="SettingsEditor/0.0.1536.824/1920.0.1920.1040@1920.0.1920.1040" timestamp="1646467778541" />
     <state x="270" y="56" width="1193" height="707" key="SettingsEditor/0.0.1536.824@0.0.1536.824" timestamp="1647163998947" />
     <state width="775" height="419" key="XDebugger.FullValuePopup" timestamp="1648295322614">
@@ -561,7 +563,7 @@
     </watches-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/DGT_Faster_RCNN$main.coverage" NAME="main Coverage Results" MODIFIED="1652947012896" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/pyqt" />
+    <SUITE FILE_PATH="coverage/DGT_Faster_RCNN$main.coverage" NAME="main Coverage Results" MODIFIED="1653111072135" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/pyqt" />
     <SUITE FILE_PATH="coverage/faster_rcnn$train_mobilenetv2.coverage" NAME="train_mobilenetv2 Coverage Results" MODIFIED="1638789083798" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/faster_rcnn$rpn_function.coverage" NAME="rpn_function Coverage Results" MODIFIED="1638789539894" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/network_files" />
     <SUITE FILE_PATH="coverage/faster_rcnn$pre.coverage" NAME="pre Coverage Results" MODIFIED="1637384335750" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
@@ -585,10 +587,12 @@
     <SUITE FILE_PATH="coverage/faster_rcnn$process_cityscapes.coverage" NAME="process_cityscapes Coverage Results" MODIFIED="1647920936006" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/data_utils" />
     <SUITE FILE_PATH="coverage/faster_rcnn$main_window.coverage" NAME="main_window Coverage Results" MODIFIED="1646025482378" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/pyqt" />
     <SUITE FILE_PATH="coverage/faster_rcnn$cal_net_param_flops.coverage" NAME="cal_net_param_flops Coverage Results" MODIFIED="1648361650033" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/derain" />
+    <SUITE FILE_PATH="coverage/DGT_Faster_RCNN$nets.coverage" NAME="nets Coverage Results" MODIFIED="1653037337203" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/derain" />
     <SUITE FILE_PATH="coverage/faster_rcnn$jian.coverage" NAME="jian Coverage Results" MODIFIED="1647773014717" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/faster_rcnn$train_res50_fpn.coverage" NAME="train_res50_fpn Coverage Results" MODIFIED="1649220969139" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/faster_rcnn$predict__1_.coverage" NAME="predict (1) Coverage Results" MODIFIED="1647406774370" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/derain" />
     <SUITE FILE_PATH="coverage/faster_rcnn$raw_image.coverage" NAME="raw_image Coverage Results" MODIFIED="1646658891712" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/pyqt" />
+    <SUITE FILE_PATH="coverage/DGT_Faster_RCNN$train_res50_fpn.coverage" NAME="train_res50_fpn Coverage Results" MODIFIED="1653055968698" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/faster_rcnn$train_depth.coverage" NAME="train_depth Coverage Results" MODIFIED="1648010158448" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/derain" />
     <SUITE FILE_PATH="coverage/faster_rcnn$draw_box_utils.coverage" NAME="draw_box_utils Coverage Results" MODIFIED="1646556775590" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/faster_rcnn$predict_depth.coverage" NAME="predict_depth Coverage Results" MODIFIED="1646715548918" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/monodepth2" />
