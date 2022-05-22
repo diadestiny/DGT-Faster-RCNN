@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 from torch import Tensor
+import torchvision.models.resnet
 
 class ChannelAttention(nn.Module):
     """
@@ -70,21 +71,23 @@ class DEB(nn.Module):
 
     def __init__(self, channel: int, ratio: int = 4) -> None:
         super(DEB, self).__init__()
+        self.conv1 = nn.Conv2d(3,channel,1,1,0)
         self.sa1 = SpatialAttention(kernel_size=3)
-        self.sa2 = SpatialAttention(kernel_size=3)
+        # self.sa2 = SpatialAttention(kernel_size=3)
 
         self.ca1 = ChannelAttention(channel, ratio)
-        self.ca2 = ChannelAttention(channel, ratio)
+        # self.ca2 = ChannelAttention(channel, ratio)
 
     def forward(self, input_rgb, input_depth):
         # attention level
+        input_depth = self.conv1(input_depth)
         map_depth = self.sa1(input_depth)
         input_rgb_sa = input_rgb.mul(map_depth) + input_rgb
         input_rgb_sa_ca = self.ca1(input_rgb_sa)
 
-        # feature level
-        map_depth2 = self.sa2(input_depth)
-        input_depth_sa = input_depth.mul(map_depth2) + input_depth
-        input_depth_sa_ca = self.ca2(input_depth_sa)
+        # # feature level
+        # map_depth2 = self.sa2(input_depth)
+        # input_depth_sa = input_depth.mul(map_depth2) + input_depth
+        # input_depth_sa_ca = self.ca2(input_depth_sa)
 
-        return input_rgb_sa_ca + input_depth_sa_ca, input_depth_sa_ca
+        return input_rgb_sa_ca

@@ -12,7 +12,7 @@ from torchvision.ops import MultiScaleRoIAlign
 
 from torchvision import transforms
 
-from backbone import resnet50_fpn_backbone
+from backbone import resnet50_fpn_backbone, MobileNetV2
 from .depth_enhance import DEB
 from .roi_head import RoIHeads
 from .transform import GeneralizedRCNNTransform, _resize_image
@@ -39,9 +39,11 @@ class FasterRCNNBase(nn.Module):
         self.rpn = rpn
         self.roi_heads = roi_heads
         self.depth_encoder = depth_encoder
-        self.dse_layer1 = DEB(channel=64, ratio=4)
-        self.dse_layer2 = DEB(channel=64, ratio=4)
-        self.dse_layer3 = DEB(channel=64, ratio=4)
+        # self.deb_layer1 = DEB(channel=256, ratio=4)
+        # self.deb_layer1 = DEB(channel=512, ratio=4)
+        # self.deb_layer2 = DEB(channel=1024, ratio=4)
+        self.conv1 = nn.Conv2d(512, 256,1)
+
         # used only on torchscript mode
         self._has_warned = False
 
@@ -81,7 +83,27 @@ class FasterRCNNBase(nn.Module):
 
         # original_image_sizes = [img.shape[-2:] for img in images]
         images, targets = self.transform(images, targets)  # 对图像进行预处理
+        # depths, _ = self.transform(depths, targets)
+        # out = OrderedDict()
+        # depth_out = OrderedDict()
+        # fused_layers = ['layer3','layer4']
+        # for (name, module) in self.backbone.body.items():
+        #     if name == fused_layers[0]:
+        #         down_f = F.interpolate(depths.tensors,scale_factor=0.125)
+        #         images.tensors = self.deb_layer1(images.tensors,down_f)
+        #     elif name == fused_layers[1]:
+        #         down_f = F.interpolate(depths.tensors, scale_factor=0.0625)
+        #         images.tensors = self.deb_layer2(images.tensors,down_f)
+        #     images.tensors = module(images.tensors)
+        #     if name in self.backbone.body.return_layers:
+        #         out_name = self.backbone.body.return_layers[name]
+        #         out[out_name] = images.tensors
+
+        # features = self.backbone.fpn(out)
         features = self.backbone(images.tensors)  # 将图像输入backbone得到特征图
+        # depth_features = self.depth_encoder(depths.tensors)  # 将图像输入backbone得到特征图
+
+        # features['3'] = self.conv1(torch.cat([features['3'], depth_features['3']], dim=1))
 
         if isinstance(features, torch.Tensor):  # 若只在一层特征层上预测，将feature放入有序字典中，并编号为‘0’
             features = OrderedDict([('0', features)])  # 若在多层特征层上预测，传入的就是一个有序字典
@@ -90,7 +112,6 @@ class FasterRCNNBase(nn.Module):
         # proposals: List[Tensor], Tensor_shape: [num_proposals, 4],
         # 每个proposals是绝对坐标，且为(x1, y1, x2, y2)格式
         proposals, proposal_losses = self.rpn(images, features, targets)
-
         # 将rpn生成的数据以及标注target信息传入fast rcnn后半部分
         detections, detector_losses = self.roi_heads(features, proposals, images.image_sizes, targets)
 
@@ -351,6 +372,8 @@ class FasterRCNN(FasterRCNNBase):
         # 对数据进行标准化，缩放，打包成batch等处理部分
         transform = GeneralizedRCNNTransform(min_size, max_size, image_mean, image_std)
         depth_encoder = resnet50_fpn_backbone(norm_layer=torch.nn.BatchNorm2d,trainable_layers=3)
+        # depth_encoder = MobileNetV2()
+        # depth_encoder.features.out_channels = 1280
         super(FasterRCNN, self).__init__(backbone, rpn, roi_heads, transform,depth_encoder)
 
 
@@ -365,8 +388,8 @@ class Derain_FasterRCNN(nn.Module):
         # for name, parameter in self.named_parameters():
         #     print(name,parameter.requires_grad)
 
-    def forward(self, rains, targets=None):
-        # type: (List[Tensor], Optional[List[Dict[str, Tensor]]]) -> Tuple[list, Any]
+    def forward(self, rains, targets=None,depths=None):
+        # type: (List[Tensor], Optional[List[Dict[str, Tensor]]], Optional[List[Dict[str, Tensor]]]) -> Tuple[list, Any]
 
         if self.DerainNet is None:
             return self.FasterRCNN(rains, targets)
@@ -375,8 +398,7 @@ class Derain_FasterRCNN(nn.Module):
             x = self.batch_images(rains, shape_h=512, shape_w=1024, dim=3)
             de_rain,depth = self.DerainNet(x.cuda())
             de_rain_list = list((transforms.Resize(rain_sizes[i])(img)).detach().to(self.device) for i, img in enumerate(de_rain))
-            depth_list = list((transforms.Resize(rain_sizes[i])(d)).detach().to(self.device) for i, d in enumerate(depth))
-            depths,_ = self.FasterRCNN.transform(depth_list,targets)
+            # depth_list = list((transforms.Resize(rain_sizes[i])(d)).detach().to(self.device) for i, d in enumerate(depth))
 
             # to_pil = transforms.ToPILImage()
             # h,w = rain_sizes[0]

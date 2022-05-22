@@ -1,5 +1,5 @@
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "4"
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 from derain.nets import DDGN_Depth_CFT, DDGN_Depth_CFT_Pred
 from network_files.faster_rcnn_framework import Derain_FasterRCNN
 import datetime
@@ -109,8 +109,8 @@ def main(parser_data):
     # define optimizer
     params = [p for p in myModel.parameters() if p.requires_grad]
 
-    # 0.005 / 0.000001
-    optimizer = torch.optim.SGD(params, lr=0.0001,
+    # 0.005 / 0.0001 / 0.000001
+    optimizer = torch.optim.SGD(params, lr=0.005,
                                 momentum=0.9, weight_decay=0.0005)
 
     # learning rate scheduler step_size=3
@@ -121,11 +121,15 @@ def main(parser_data):
     # 如果指定了上次训练保存的权重文件地址，则接着上次结果接着训练
     if parser_data.resume != "":
         checkpoint = torch.load(parser_data.resume, map_location='cpu')
-        faster_rcnn_model.load_state_dict(checkpoint['model'],strict=False)
-        depth_params = faster_rcnn_model.depth_encoder.keys()
-        pretrained_dict = {k.replace('backbone','depth_encoder'):v for k,v in checkpoint['model'].items() if k.replace('backbone','depth_encoder') in depth_params}
+        # depth_encoder_checkpoint = torch.load("./models/mobilenet_v2.pth", map_location='cpu')
+        # faster_rcnn_model.depth_encoder.load_state_dict(depth_encoder_checkpoint,strict=True)
+        # faster_rcnn_model.load_state_dict(checkpoint['model'],strict=False)
+
+        depth_params = faster_rcnn_model.depth_encoder.state_dict()
+        pretrained_dict = {k.replace('backbone.',''):v for k,v in checkpoint.items() if k.replace('backbone.','') in depth_params.keys()}
         depth_params.update(pretrained_dict)
-        faster_rcnn_model.depth_encoder.load_state_dict(checkpoint['model'],strict=False)
+        faster_rcnn_model.depth_encoder.load_state_dict(depth_params,strict=True)
+
         # optimizer.load_state_dict(checkpoint['optimizer'])
         # lr_scheduler.load_state_dict(checkpoint['lr_scheduler'])
         # parser_data.start_epoch = checkpoint['epoch'] + 1
@@ -153,7 +157,6 @@ def main(parser_data):
             result_info = [str(round(i, 4)) for i in coco_info + [mean_loss.item()]] + [str(round(lr, 6))]
             txt = "epoch:{} {}".format(epoch, '  '.join(result_info))
             f.write(txt + "\n")
-
         val_map.append(coco_info[1])  # pascal mAP
 
         # save weights
@@ -189,7 +192,7 @@ if __name__ == "__main__":
     # 文件保存地址
     parser.add_argument('--output-dir', default='./save_weights', help='path where to save')
     # 若需要接着上次训练，则指定上次训练保存权重文件地址 kitti:resNetFpn-models-41.pth
-    parser.add_argument('--resume', default='./models/cityscapes_20220219_39.pth', type=str, help='resume from checkpoint')
+    parser.add_argument('--resume', default='./models/fasterrcnn_resnet50_fpn_coco.pth', type=str, help='resume from checkpoint')
     # ./ old_models / 20211222_39_new_train.pth
     # save_weights
     # 指定接着从哪个epoch数开始训练

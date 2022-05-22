@@ -4,7 +4,7 @@ import torch.nn.functional as F
 from torchsummary import summary
 from torch import nn
 from torch.autograd import Variable
-from modules import DilatedResidualBlock, NLB, DGNL, DepthWiseDilatedResidualBlock, VIT
+from derain.modules import DilatedResidualBlock, NLB, DGNL, DepthWiseDilatedResidualBlock, VIT
 import torchvision.models as models
 
 
