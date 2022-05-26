@@ -102,14 +102,14 @@ def main(parser_data):
     # create models num_classes equal background + 20 classes
     faster_rcnn_model = create_model(num_classes=parser_data.num_classes + 1)
     de_rain_model = DDGN_Depth_CFT_Pred()
-    de_rain_model.load_state_dict(torch.load("derain/ckpt/kitti_depth_cft_pred/iter_40000_loss1_0.01297_loss2_0.00000_lr_0.000000.pth"))
+    de_rain_model.load_state_dict(torch.load("derain/ckpt/city_depth_cft_pred/iter_40000_loss1_0.01729_loss2_0.00000_lr_0.000000.pth"))
     myModel = Derain_FasterRCNN(FasterRCNN=faster_rcnn_model,DerainNet=de_rain_model)
     myModel.to(device)
     # define optimizer
     params = [p for p in myModel.parameters() if p.requires_grad]
 
     # 0.005 / 0.0001 / 0.000001
-    optimizer = torch.optim.SGD(params, lr=0.005,
+    optimizer = torch.optim.SGD(params, lr=0.0001,
                                 momentum=0.9, weight_decay=0.0005)
 
     # learning rate scheduler step_size=3
@@ -120,7 +120,7 @@ def main(parser_data):
     # 如果指定了上次训练保存的权重文件地址，则接着上次结果接着训练
     if parser_data.resume != "":
         checkpoint = torch.load(parser_data.resume, map_location='cpu')
-        # myModel.FasterRCNN.load_state_dict(checkpoint['model'],strict=False)
+        myModel.FasterRCNN.load_state_dict(checkpoint['model'],strict=False)
         # depth_encoder_checkpoint = torch.load("./models/mobilenet_v2.pth", map_location='cpu')
         # faster_rcnn_model.depth_encoder.load_state_dict(depth_encoder_checkpoint,strict=True)
         # faster_rcnn_model.load_state_dict(checkpoint['model'],strict=False)
@@ -172,7 +172,7 @@ def main(parser_data):
             'optimizer': optimizer.state_dict(),
             'lr_scheduler': lr_scheduler.state_dict(),
             'epoch': epoch}
-        torch.save(save_files, "./save_weights/depth-models-{}.pth".format(epoch))
+        torch.save(save_files, "./save_weights/city-depth-models-{}.pth".format(epoch))
         # torch.save(de_rain_model.state_dict(), "./save_weights/de_rain-{}.pth".format(epoch))
         # torch.save(myModel.fea_similar_conv.state_dict(), "./save_weights/fea_similar_conv-{}.pth".format(epoch))
     # plot loss and lr curve
@@ -195,12 +195,12 @@ if __name__ == "__main__":
     # 训练数据集的根目录(VOCdevkit)
     parser.add_argument('--data-path', default='../', help='dataset')
     # 检测目标类别数(不包含背景)
-    parser.add_argument('--dataset', default='kitti', type=str)
-    parser.add_argument('--num-classes', default=7, type=int, help='num_classes')
+    parser.add_argument('--dataset', default='cityscapes', type=str)
+    parser.add_argument('--num-classes', default=8, type=int, help='num_classes')
     # 文件保存地址
     parser.add_argument('--output-dir', default='./save_weights', help='path where to save')
     # 若需要接着上次训练，则指定上次训练保存权重文件地址 kitti:resNetFpn-models-41.pth  kitti_20211222_39.pth
-    parser.add_argument('--resume', default='./models/fasterrcnn_resnet50_fpn_coco.pth', type=str, help='resume from checkpoint')
+    parser.add_argument('--resume', default='./models/cityscapes_20220219_39.pth', type=str, help='resume from checkpoint')
     # ./ old_models / 20211222_39_new_train.pth
     # save_weights
     # 指定接着从哪个epoch数开始训练

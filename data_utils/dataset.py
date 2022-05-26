@@ -27,7 +27,7 @@ class VOCDataSet(Dataset):
             if txt_name == "train.txt":
                 txt_name = "train_rain.txt"
             elif txt_name == "val.txt":
-                txt_name = "val_hu_test.txt"
+                txt_name = "val_huxiaowei.txt"
 
         self.img_rain_root = os.path.join(self.root, "JPEGImages_rain_all")
         self.depth_root = os.path.join(self.root, "depth")
