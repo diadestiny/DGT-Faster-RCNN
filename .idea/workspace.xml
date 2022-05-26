@@ -19,12 +19,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="2362c087-11f8-491c-ab84-5ef58dc1585a" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_utils/dataset.py" beforeDir="false" afterPath="$PROJECT_DIR$/data_utils/dataset.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/train_res50_fpn.py" beforeDir="false" afterPath="$PROJECT_DIR$/train_res50_fpn.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/train_utils/train_eval_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/train_utils/train_eval_utils.py" afterDir="false" />
-    </list>
+    <list default="true" id="2362c087-11f8-491c-ab84-5ef58dc1585a" name="Default Changelist" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -342,7 +337,7 @@
       <workItem from="1653024643876" duration="2968000" />
       <workItem from="1653200070355" duration="11015000" />
       <workItem from="1653366268284" duration="20465000" />
-      <workItem from="1653464770715" duration="35431000" />
+      <workItem from="1653464770715" duration="35727000" />
     </task>
     <servers />
   </component>
