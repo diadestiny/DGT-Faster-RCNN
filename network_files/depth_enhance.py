@@ -71,23 +71,47 @@ class DEB(nn.Module):
 
     def __init__(self, channel: int, ratio: int = 4) -> None:
         super(DEB, self).__init__()
-        self.conv1 = nn.Conv2d(3,channel,1,1,0)
         self.sa1 = SpatialAttention(kernel_size=3)
-        # self.sa2 = SpatialAttention(kernel_size=3)
-
+        self.sa2 = SpatialAttention(kernel_size=3)
         self.ca1 = ChannelAttention(channel, ratio)
-        # self.ca2 = ChannelAttention(channel, ratio)
+        self.ca2 = ChannelAttention(channel, ratio)
 
     def forward(self, input_rgb, input_depth):
         # attention level
-        input_depth = self.conv1(input_depth)
         map_depth = self.sa1(input_depth)
         input_rgb_sa = input_rgb.mul(map_depth) + input_rgb
         input_rgb_sa_ca = self.ca1(input_rgb_sa)
 
         # # feature level
-        # map_depth2 = self.sa2(input_depth)
-        # input_depth_sa = input_depth.mul(map_depth2) + input_depth
-        # input_depth_sa_ca = self.ca2(input_depth_sa)
+        map_depth2 = self.sa2(input_depth)
+        input_depth_sa = input_depth.mul(map_depth2) + input_depth
+        input_depth_sa_ca = self.ca2(input_depth_sa)
 
-        return input_rgb_sa_ca
+        return input_rgb_sa_ca, input_depth_sa_ca
+
+class RDE(nn.Module):
+    """
+    The implementation of RGB-induced details enhancement module.
+    """
+
+    def __init__(self, channel: int) -> None:
+        super(RDE, self).__init__()
+        self.conv_pool = nn.Sequential(
+            nn.Conv2d(channel * 2, channel, kernel_size=1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(channel, channel, kernel_size=3, padding=1)
+        )
+
+        self.conv1 = nn.Conv2d(1, 1, kernel_size=7, padding=3, bias=False)
+        self.conv2 = nn.Conv2d(1, 1, kernel_size=7, padding=3, bias=False)
+
+    def forward(self, input_rgb: Tensor, input_depth: Tensor) -> Tensor:
+        rgbd = torch.cat([input_rgb, input_depth], dim=1)
+        feature_pool = self.conv_pool(rgbd)
+
+        x, _ = torch.max(input_depth, dim=1, keepdim=True)
+        x = self.conv2(self.conv1(x))
+        mask = torch.sigmoid(x)
+        depth_enhance = feature_pool * mask + input_depth
+
+        return depth_enhance

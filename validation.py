@@ -130,8 +130,8 @@ def main(parser_data):
     backbone = resnet50_fpn_backbone(norm_layer=torch.nn.BatchNorm2d)
     model = FasterRCNN(backbone=backbone, num_classes=parser_data.num_classes + 1)
 
-    de_rain_model = DDGN_Depth_CFT()
-    de_rain_model.load_state_dict(torch.load("derain/ckpt/city_depth_cft/iter_40000_loss1_0.02199_loss2_0.00000_lr_0.000000.pth"))
+    de_rain_model = DDGN_Depth_CFT_Pred()
+    de_rain_model.load_state_dict(torch.load("derain/ckpt/kitti_depth_cft_pred/iter_40000_loss1_0.01297_loss2_0.00000_lr_0.000000.pth"))
     # de_rain_model.load_state_dict(torch.load("./backbone/iter_16500_loss1_0.00871_loss2_0.00000_lr_0.000310.pth"))
     # skip_net = Skip_Net()
     # skip_net.load_state_dict(torch.load("./save_weights/skip_net-20.pth"))
@@ -143,7 +143,7 @@ def main(parser_data):
     # print(models)
     model.to(device)
     de_rain_model.to(device)
-    myModel = Derain_FasterRCNN(FasterRCNN=model,device=device)
+    myModel = Derain_FasterRCNN(FasterRCNN=model,DerainNet=de_rain_model)
 
     # evaluate on the test dataset
     coco = get_coco_api_from_dataset(val_dataset)
@@ -156,10 +156,7 @@ def main(parser_data):
             # 注意修改rain=rains or images
             rain = list(img.to(device) for img in rains)
             # labels = torch.Tensor(labels)
-            if not isinstance(de_rain_model,DDGN_Basic):
-                imglists,outputs = myModel(rains=rain,depths=depths,images=images)
-            else:
-                outputs = myModel(rains=rain)
+            out_list,outputs = myModel(rains=rain)
             outputs = [{k: v.to(cpu_device) for k, v in t.items()} for t in outputs]
             res = {target["image_id"].item(): output for target, output in zip(targets, outputs)}
             coco_evaluator.update(res)
@@ -210,19 +207,18 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description=__doc__)
     # 数据集类型
-    parser.add_argument('--data-name', default='cityscapes', help='dataset name')
-    parser.add_argument('--val-txt-name',default='val_huxiaowei.txt',help='val txt name')
+    parser.add_argument('--data-name', default='kitti', help='dataset name')
+    parser.add_argument('--val-txt-name',default='val.txt',help='val txt name')
     # 使用设备类型
     parser.add_argument('--device', default='cuda', help='device')
     # 检测目标类别数
-    parser.add_argument('--num-classes', type=int, default='8', help='number of classes')
+    parser.add_argument('--num-classes', type=int, default='7', help='number of classes')
     # 数据集的根目录(VOCdevkit)
     parser.add_argument('--data-path', default='../', help='dataset root')
     # 训练好的权重文件
-    parser.add_argument('--weights', default='./models/cityscapes_20220219_39.pth', type=str, help='training weights')
+    parser.add_argument('--weights', default='./models/kitti-depth-models-3.pth', type=str, help='training weights')
     # batch size
-    parser.add_argument('--batch_size', default=8, type=int, metavar='N',
-                        help='batch size when validation.')
+    parser.add_argument('--batch_size', default=8, type=int, metavar='N', help='batch size when validation.')
 
     args = parser.parse_args()
 

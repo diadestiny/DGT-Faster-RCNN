@@ -9,14 +9,25 @@ from lxml import etree
 class VOCDataSet(Dataset):
     """读取解析PASCAL VOC2007/2012数据集"""
 
-    def __init__(self, voc_root, year="2012", transforms=None, txt_name: str = "train.txt",dataset_name="kitti"):
+    def __init__(self, voc_root, year="2012", transforms=None, txt_name: str = "train.txt", dataset_name="kitti"):
+        global json_file
         assert year in ["2007", "2012"], "year must be in ['2007', '2012']"
         if dataset_name == "kitti":
             self.root = os.path.join(voc_root, "VOCdevkit_kitti", f"VOC{year}")
             self.img_root = os.path.join(self.root, "JPEGImages")
+            json_file = 'pascal_voc_classes_kitti.json'
+        elif dataset_name == "cityscapes_raw":
+            self.root = os.path.join(voc_root, "VOCdevkit", f"VOC{year}")
+            self.img_root = os.path.join(self.root, "JPEGImages_detection")
+            json_file = 'pascal_voc_classes_cityscapes.json'
         else:
             self.root = os.path.join(voc_root, "VOCdevkit", f"VOC{year}")
             self.img_root = os.path.join(self.root, "Huxiaowei_gt")
+            json_file = 'pascal_voc_classes_cityscapes.json'
+            if txt_name == "train.txt":
+                txt_name = "train_rain.txt"
+            elif txt_name == "val.txt":
+                txt_name = "val_hu_test.txt"
 
         self.img_rain_root = os.path.join(self.root, "JPEGImages_rain_all")
         self.depth_root = os.path.join(self.root, "depth")
@@ -36,12 +47,10 @@ class VOCDataSet(Dataset):
         #     assert os.path.exists(xml_path), "not found '{}' file.".format(xml_path)
 
         # read class_indict
-        json_file = 'pascal_voc_classes_'+dataset_name+'.json'
         assert os.path.exists(json_file), "{} file not exist.".format(json_file)
         json_file = open(json_file, 'r')
         self.class_dict = json.load(json_file)
         json_file.close()
-
         self.transforms = transforms
 
     def __len__(self):
@@ -50,23 +59,30 @@ class VOCDataSet(Dataset):
     def __getitem__(self, idx):
         # read xml
         xml_path = self.xml_list[idx]
-        if self.dataset_name == "kitti":
+        if self.dataset_name == "kitti" or self.dataset_name == "cityscapes_raw":
             with open(xml_path) as fid:
                 xml_str = fid.read()
         else:
-            with open(xml_path.split('_rain_')[0]+".xml") as fid:
+            with open(xml_path.split('_rain_')[0] + ".xml") as fid:
                 xml_str = fid.read()
         xml = etree.fromstring(xml_str)
         data = self.parse_xml_to_dict(xml)["annotation"]
         img_rain_path = os.path.join(self.img_rain_root, data["filename"])
         depth_path = os.path.join(self.depth_root, data["filename"])
+
         if self.dataset_name == "kitti":
             img_path = os.path.join(self.img_root, data["filename"])
             image_rain = Image.open(img_rain_path).convert('RGB')
+        elif self.dataset_name == "cityscapes_raw":
+            img_path = os.path.join(self.img_root, data["filename"])
+            depth_path = depth_path.replace('JPEGImages_detection','depth').replace('leftImg8bit','depth_rain')
+            image_rain = Image.open(img_path).convert('RGB')  # 虚拟，没用到
         else:
-            img_path = img_rain_path.replace('JPEGImages_rain_all/', 'Huxiaowei_gt/').split('_leftImg8bit')[0] + "_leftImg8bit.png"
+            img_path = img_rain_path.replace('JPEGImages_rain_all/', 'Huxiaowei_gt/').split('_leftImg8bit')[
+                           0] + "_leftImg8bit.png"
             image_rain = Image.open(xml_path.replace('Annotations', 'JPEGImages_rain_all')[:-4] + ".png").convert('RGB')
             depth_path = depth_path.split('_leftImg8bit')[0] + "_depth_rain.png"
+
         image = Image.open(img_path).convert('RGB')
         depth = Image.open(depth_path)
         # r, g, b= image.split()
@@ -106,21 +122,14 @@ class VOCDataSet(Dataset):
         target["iscrowd"] = iscrowd
 
         if self.transforms is not None:
-            image, target, image_rain, depth= self.transforms(image, target,image_rain,depth)
-
-        # if "alpha_0.01" in xml_path:
-        #     label_index = 0
-        # elif "alpha_0.02" in xml_path:
-        #     label_index = 1
-        # elif "alpha_0.03" in xml_path:
-        #     label_index = 2
+            image, target, image_rain, depth = self.transforms(image, target, image_rain, depth)
 
         return image, target, image_rain, depth
 
     def get_height_and_width(self, idx):
         # read xml
         xml_path = self.xml_list[idx]
-        if self.dataset_name == "kitti":
+        if self.dataset_name == "kitti" or self.dataset_name == "cityscapes_raw":
             with open(xml_path) as fid:
                 xml_str = fid.read()
         else:
@@ -156,7 +165,7 @@ class VOCDataSet(Dataset):
         """
         # read xml
         xml_path = self.xml_list[idx]
-        if self.dataset_name == "kitti":
+        if self.dataset_name == "kitti" or self.dataset_name == "cityscapes_raw":
             with open(xml_path) as fid:
                 xml_str = fid.read()
         else:
@@ -203,18 +212,19 @@ class VOCDataSet(Dataset):
     def collate_fn(batch):
         return tuple(zip(*batch))
 
-import transforms
-from draw_box_utils import draw_box
-from PIL import Image
-import json
-import matplotlib.pyplot as plt
-import torchvision.transforms as ts
-import random
 
-# read class_indict
+# import transforms
+# from draw_box_utils import draw_box
+# from PIL import Image
+# import json
+# import matplotlib.pyplot as plt
+# import torchvision.transforms as ts
+# import random
+#
+# # read class_indict
 # category_index = {}
 # try:
-#     json_file = open('./pascal_voc_classes_kitti.json', 'r')
+#     json_file = open('../pascal_voc_classes_kitti.json', 'r')
 #     class_dict = json.load(json_file)
 #     category_index = {v: k for k, v in class_dict.items()}
 # except Exception as e:
@@ -226,11 +236,11 @@ import random
 #                                  transforms.RandomHorizontalFlip(0.5)]),
 #     "val": transforms.Compose([transforms.ToTensor()])
 # }
-#
-# # load train data set
-# train_data_set = VOCDataSet("../", "2012", data_transform["train"], "train.txt")
+
+# load train data set
+# train_data_set = VOCDataSet("../../", "2012", data_transform["train"], "val.txt", dataset_name="kitti")
 # print(len(train_data_set))
-# for index in random.sample(range(0, len(train_data_set)), k=5):
+# for index in random.sample(range(0, len(train_data_set)), k=20):
 #     img, target,rain,depth = train_data_set[index]
 #     img = ts.ToPILImage()(img)
 #     draw_box(img,

@@ -12,6 +12,7 @@ from torchvision.ops import MultiScaleRoIAlign
 
 from torchvision import transforms
 
+import monodepth2
 from backbone import resnet50_fpn_backbone, MobileNetV2
 from .depth_enhance import DEB
 from .roi_head import RoIHeads
@@ -32,18 +33,17 @@ class FasterRCNNBase(nn.Module):
             the models
     """
 
-    def __init__(self, backbone, rpn, roi_heads, transform,depth_encoder):
+    def __init__(self, backbone, rpn, roi_heads, transform):
         super(FasterRCNNBase, self).__init__()
         self.transform = transform
         self.backbone = backbone
         self.rpn = rpn
         self.roi_heads = roi_heads
-        self.depth_encoder = depth_encoder
-        # self.deb_layer1 = DEB(channel=256, ratio=4)
-        # self.deb_layer1 = DEB(channel=512, ratio=4)
-        # self.deb_layer2 = DEB(channel=1024, ratio=4)
-        self.conv1 = nn.Conv2d(512, 256,1)
-
+        self.depth_encoder = resnet50_fpn_backbone(norm_layer=torch.nn.BatchNorm2d,trainable_layers=3)
+        # self.rde_layer1 = RDE(channel=64)
+        self.deb_layer1 = DEB(channel=256, ratio=4)
+        self.deb_layer2 = DEB(channel=512, ratio=4)
+        self.deb_layer3 = DEB(channel=1024, ratio=4)
         # used only on torchscript mode
         self._has_warned = False
 
@@ -55,7 +55,7 @@ class FasterRCNNBase(nn.Module):
 
         return detections
 
-    def forward(self, images, targets=None,depths= None):
+    def forward(self, images, targets=None,depths=None):
         # type: (List[Tensor], Optional[List[Dict[str, Tensor]]], Optional[List[Dict[str, Tensor]]]) -> Tuple[Dict[str, Tensor], List[Dict[str, Tensor]]]
 
         if self.training and targets is None:
@@ -83,31 +83,44 @@ class FasterRCNNBase(nn.Module):
 
         # original_image_sizes = [img.shape[-2:] for img in images]
         images, targets = self.transform(images, targets)  # 对图像进行预处理
-        # depths, _ = self.transform(depths, targets)
-        # out = OrderedDict()
+        depths, _ = self.transform(depths)
+        # fused_layers = ['layer2','layer3','layer4']
+        out = OrderedDict()
+        x = images.tensors
+        y = depths.tensors
+        for ((name, module),(name,depth_module)) in zip(self.backbone.body.items(),self.depth_encoder.body.items()):
+            if name == 'layer2':
+                x, y = self.deb_layer1(x, y)
+            elif name == 'layer3':
+                x, y = self.deb_layer2(x, y)
+            elif name == 'layer4':
+                x, y = self.deb_layer3(x, y)
+            x = module(x)
+            y = depth_module(y)
+            if name in self.backbone.body.return_layers:
+                out_name = self.backbone.body.return_layers[name]
+                out[out_name] = x
         # depth_out = OrderedDict()
-        # fused_layers = ['layer3','layer4']
+
+        # depth_features = self.depth_encoder(depths.tensors)  # 将图像输入backbone得到特征图
         # for (name, module) in self.backbone.body.items():
-        #     if name == fused_layers[0]:
-        #         down_f = F.interpolate(depths.tensors,scale_factor=0.125)
-        #         images.tensors = self.deb_layer1(images.tensors,down_f)
-        #     elif name == fused_layers[1]:
-        #         down_f = F.interpolate(depths.tensors, scale_factor=0.0625)
-        #         images.tensors = self.deb_layer2(images.tensors,down_f)
+        #
+        #     # elif name == fused_layers[1]:
+        #     #     images.tensors = self.conv2(torch.cat([images.tensors, depth_features[3]], dim=1))
         #     images.tensors = module(images.tensors)
         #     if name in self.backbone.body.return_layers:
         #         out_name = self.backbone.body.return_layers[name]
         #         out[out_name] = images.tensors
+        # out = self.backbone.body(x)
+        features = self.backbone.fpn(out)
+        # features = self.backbone(images.tensors)  # 将图像输入backbone得到特征图
 
-        # features = self.backbone.fpn(out)
-        features = self.backbone(images.tensors)  # 将图像输入backbone得到特征图
-        # depth_features = self.depth_encoder(depths.tensors)  # 将图像输入backbone得到特征图
-
-        # features['3'] = self.conv1(torch.cat([features['3'], depth_features['3']], dim=1))
+        # features['1'] = self.conv1(torch.cat([features['1'], depth_features['1']], dim=1))
+        # features['2'] = self.conv2(torch.cat([features['2'], depth_features['2']], dim=1))
+        # features['3'] = self.conv3(torch.cat([features['3'], depth_features['3']], dim=1))
 
         if isinstance(features, torch.Tensor):  # 若只在一层特征层上预测，将feature放入有序字典中，并编号为‘0’
             features = OrderedDict([('0', features)])  # 若在多层特征层上预测，传入的就是一个有序字典
-
         # 将特征层以及标注target信息传入rpn中
         # proposals: List[Tensor], Tensor_shape: [num_proposals, 4],
         # 每个proposals是绝对坐标，且为(x1, y1, x2, y2)格式
@@ -129,12 +142,6 @@ class FasterRCNNBase(nn.Module):
             return losses, detections
         else:
             return self.eager_outputs(losses, detections)
-
-        # if self.training:
-        #     return losses
-        #
-        # return detections
-
 
 class TwoMLPHead(nn.Module):
     """
@@ -371,20 +378,22 @@ class FasterRCNN(FasterRCNNBase):
 
         # 对数据进行标准化，缩放，打包成batch等处理部分
         transform = GeneralizedRCNNTransform(min_size, max_size, image_mean, image_std)
-        depth_encoder = resnet50_fpn_backbone(norm_layer=torch.nn.BatchNorm2d,trainable_layers=3)
+        # depth_encoder = resnet50_fpn_backbone(norm_layer=torch.nn.BatchNorm2d,trainable_layers=3)
+        # for name, parameter in depth_encoder.named_parameters():
+        #     parameter.requires_grad = False
         # depth_encoder = MobileNetV2()
         # depth_encoder.features.out_channels = 1280
-        super(FasterRCNN, self).__init__(backbone, rpn, roi_heads, transform,depth_encoder)
+        super(FasterRCNN, self).__init__(backbone, rpn, roi_heads, transform)
 
 
 class Derain_FasterRCNN(nn.Module):
-    def __init__(self, FasterRCNN, device, DerainNet=None):
+    def __init__(self, FasterRCNN, DerainNet=None):
         super(Derain_FasterRCNN, self).__init__()
         self.DerainNet = DerainNet
-        for name, parameter in self.named_parameters():
+        for name, parameter in self.DerainNet.named_parameters():
             parameter.requires_grad = False
         self.FasterRCNN = FasterRCNN
-        self.device = device
+        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         # for name, parameter in self.named_parameters():
         #     print(name,parameter.requires_grad)
 
@@ -392,13 +401,14 @@ class Derain_FasterRCNN(nn.Module):
         # type: (List[Tensor], Optional[List[Dict[str, Tensor]]], Optional[List[Dict[str, Tensor]]]) -> Tuple[list, Any]
 
         if self.DerainNet is None:
-            return self.FasterRCNN(rains, targets)
+            return self.FasterRCNN(rains, targets,depths=depths)
         else:
             rain_sizes = [rain.shape[-2:] for rain in rains]
             x = self.batch_images(rains, shape_h=512, shape_w=1024, dim=3)
+            # depth = self.batch_images(depths, shape_h=512, shape_w=1024, dim=1)
             de_rain,depth = self.DerainNet(x.cuda())
             de_rain_list = list((transforms.Resize(rain_sizes[i])(img)).detach().to(self.device) for i, img in enumerate(de_rain))
-            # depth_list = list((transforms.Resize(rain_sizes[i])(d)).detach().to(self.device) for i, d in enumerate(depth))
+            depth_list = list((transforms.Resize(rain_sizes[i])(d)).detach().to(self.device) for i, d in enumerate(depth))
 
             # to_pil = transforms.ToPILImage()
             # h,w = rain_sizes[0]
@@ -407,10 +417,9 @@ class Derain_FasterRCNN(nn.Module):
             # depth_res = transforms.Resize((h, w))(to_pil(depth[0].data.squeeze(0).cpu()))
             # depth_res.save("test_depth.png")
             if self.training:
-                loss_dict= self.FasterRCNN(de_rain_list, targets, depths=depths)
-                return loss_dict
+                 return self.FasterRCNN(de_rain_list, targets, depths=depth_list)
             else:
-                return de_rain_list, self.FasterRCNN(de_rain_list, depths=depths)
+                return de_rain_list, self.FasterRCNN(de_rain_list, depths=depth_list)
             # derain_en_ft =  torch.nn.functional.interpolate(derain_en_ft, size=(208,672), mode="bilinear",align_corners=False)
             # en_ft = self.SkipNet(derain_en_ft)
 

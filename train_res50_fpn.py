@@ -1,5 +1,5 @@
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 from derain.nets import DDGN_Depth_CFT, DDGN_Depth_CFT_Pred
 from network_files.faster_rcnn_framework import Derain_FasterRCNN
 import datetime
@@ -58,7 +58,7 @@ def main(parser_data):
 
     # load train data set
     # VOCdevkit -> VOC2012 -> ImageSets -> Main -> train.txt
-    train_dataset = VOCDataSet(VOC_root, "2012", data_transform["train"], "train_rain.txt",dataset_name="cityscapes")
+    train_dataset = VOCDataSet(VOC_root, "2012", data_transform["train"], "train.txt",dataset_name=args.dataset)
     train_sampler = None
 
     # 是否按图片相似高宽比采样图片组成batch
@@ -91,7 +91,7 @@ def main(parser_data):
 
     # load validation data set
     # VOCdevkit -> VOC2012 -> ImageSets -> Main -> val.txt
-    val_dataset = VOCDataSet(VOC_root, "2012", data_transform["val"], "val_huxiaowei.txt",dataset_name="cityscapes")
+    val_dataset = VOCDataSet(VOC_root, "2012", data_transform["val"], "val.txt",dataset_name=args.dataset)
     val_data_set_loader = torch.utils.data.DataLoader(val_dataset,
                                                       batch_size=8,
                                                       shuffle=False,
@@ -102,9 +102,8 @@ def main(parser_data):
     # create models num_classes equal background + 20 classes
     faster_rcnn_model = create_model(num_classes=parser_data.num_classes + 1)
     de_rain_model = DDGN_Depth_CFT_Pred()
-    de_rain_model.load_state_dict(torch.load("derain/ckpt/city_depth_cft_pred/iter_40000_loss1_0.01729_loss2_0.00000_lr_0.000000.pth"))
-
-    myModel = Derain_FasterRCNN(FasterRCNN=faster_rcnn_model, DerainNet=de_rain_model,device=device)
+    de_rain_model.load_state_dict(torch.load("derain/ckpt/kitti_depth_cft_pred/iter_40000_loss1_0.01297_loss2_0.00000_lr_0.000000.pth"))
+    myModel = Derain_FasterRCNN(FasterRCNN=faster_rcnn_model,DerainNet=de_rain_model)
     myModel.to(device)
     # define optimizer
     params = [p for p in myModel.parameters() if p.requires_grad]
@@ -115,20 +114,27 @@ def main(parser_data):
 
     # learning rate scheduler step_size=3
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer,
-                                                   step_size=5,
+                                                   step_size=3,
                                                    gamma=0.33)
 
     # 如果指定了上次训练保存的权重文件地址，则接着上次结果接着训练
     if parser_data.resume != "":
         checkpoint = torch.load(parser_data.resume, map_location='cpu')
+        # myModel.FasterRCNN.load_state_dict(checkpoint['model'],strict=False)
         # depth_encoder_checkpoint = torch.load("./models/mobilenet_v2.pth", map_location='cpu')
         # faster_rcnn_model.depth_encoder.load_state_dict(depth_encoder_checkpoint,strict=True)
         # faster_rcnn_model.load_state_dict(checkpoint['model'],strict=False)
 
-        depth_params = faster_rcnn_model.depth_encoder.state_dict()
+        depth_params = myModel.FasterRCNN.depth_encoder.state_dict()
         pretrained_dict = {k.replace('backbone.',''):v for k,v in checkpoint.items() if k.replace('backbone.','') in depth_params.keys()}
+        # # print(pretrained_dict.keys())
         depth_params.update(pretrained_dict)
-        faster_rcnn_model.depth_encoder.load_state_dict(depth_params,strict=True)
+        myModel.FasterRCNN.depth_encoder.load_state_dict(depth_params,strict=True)
+
+        # loaded_dict_enc = torch.load("./models/mono+stereo_640x192/encoder.pth", map_location=device)
+        # filtered_dict_enc = {k: v for k, v in loaded_dict_enc.items() if k in depth_params}
+        # faster_rcnn_model.depth_encoder.load_state_dict(filtered_dict_enc)
+        # faster_rcnn_model.depth_encoder.to(device)
 
         # optimizer.load_state_dict(checkpoint['optimizer'])
         # lr_scheduler.load_state_dict(checkpoint['lr_scheduler'])
@@ -140,9 +146,10 @@ def main(parser_data):
     val_map = []
     for epoch in range(parser_data.start_epoch, parser_data.epochs):
         # train for one epoch, printing every 10 iterations
+        # coco_info = utils.evaluate(myModel, val_data_set_loader, device=device)
         mean_loss, lr = utils.train_one_epoch(myModel, optimizer, train_data_loader,
                                               device=device, epoch=epoch,
-                                              print_freq=50, warmup=False)
+                                              print_freq=50, warmup=True)
         train_loss.append(mean_loss.item())
         learning_rate.append(lr)
 
@@ -165,7 +172,7 @@ def main(parser_data):
             'optimizer': optimizer.state_dict(),
             'lr_scheduler': lr_scheduler.state_dict(),
             'epoch': epoch}
-        torch.save(save_files, "./save_weights/resNetFpn-models-{}.pth".format(epoch))
+        torch.save(save_files, "./save_weights/depth-models-{}.pth".format(epoch))
         # torch.save(de_rain_model.state_dict(), "./save_weights/de_rain-{}.pth".format(epoch))
         # torch.save(myModel.fea_similar_conv.state_dict(), "./save_weights/fea_similar_conv-{}.pth".format(epoch))
     # plot loss and lr curve
@@ -188,10 +195,11 @@ if __name__ == "__main__":
     # 训练数据集的根目录(VOCdevkit)
     parser.add_argument('--data-path', default='../', help='dataset')
     # 检测目标类别数(不包含背景)
-    parser.add_argument('--num-classes', default=8, type=int, help='num_classes')
+    parser.add_argument('--dataset', default='kitti', type=str)
+    parser.add_argument('--num-classes', default=7, type=int, help='num_classes')
     # 文件保存地址
     parser.add_argument('--output-dir', default='./save_weights', help='path where to save')
-    # 若需要接着上次训练，则指定上次训练保存权重文件地址 kitti:resNetFpn-models-41.pth
+    # 若需要接着上次训练，则指定上次训练保存权重文件地址 kitti:resNetFpn-models-41.pth  kitti_20211222_39.pth
     parser.add_argument('--resume', default='./models/fasterrcnn_resnet50_fpn_coco.pth', type=str, help='resume from checkpoint')
     # ./ old_models / 20211222_39_new_train.pth
     # save_weights

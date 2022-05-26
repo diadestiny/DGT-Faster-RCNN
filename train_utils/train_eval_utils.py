@@ -28,26 +28,23 @@ def train_one_epoch(model, optimizer, data_loader, device, epoch,
     mloss = torch.zeros(1).to(device)  # mean losses
     print(optimizer.param_groups[0]["lr"])
     enable_amp = True if "cuda" in device.type else False
-    for i, [images, targets,rains,depths] in enumerate(metric_logger.log_every(data_loader, print_freq, header)):
-        # images = list(image.to(device) for image in images)
+
+    for i, [images,targets,rains,depths] in enumerate(metric_logger.log_every(data_loader, print_freq, header)):
+        images = list(image.to(device) for image in images)
         rains = list(rain.to(device) for rain in rains)
         depths = list(depth.to(device) for depth in depths)
         targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
 
         # 混合精度训练上下文管理器，如果在CPU环境中不起任何作用
         with torch.cuda.amp.autocast(enabled=enable_amp):
-            loss_dict = model(rains=rains,targets=targets,depths=depths)
-            # loss_dict = model(images, targets=targets)
+            loss_dict = model(rains,targets=targets,depths=depths)
             losses = sum(loss for loss in loss_dict.values())
-
             # reduce losses over all GPUs for logging purpose
             loss_dict_reduced = utils.reduce_dict(loss_dict)
             losses_reduced = sum(loss for loss in loss_dict_reduced.values())
-
             loss_value = losses_reduced.item()
             # 记录训练损失
             mloss = (mloss * i + loss_value) / (i + 1)  # update mean losses
-
             if not math.isfinite(loss_value):  # 当计算的损失为无穷大时停止训练
                 print("Loss is {}, stopping training".format(loss_value))
                 print(loss_dict_reduced)
@@ -80,19 +77,20 @@ def evaluate(model, data_loader, device):
     coco_evaluator = CocoEvaluator(coco, iou_types)
 
     for images, targets,rains,depths in metric_logger.log_every(data_loader, 100, header):
-        # images = list(img.to(device) for img in images)
+        images = list(img.to(device) for img in images)
         rains = list(rain.to(device) for rain in rains)
         depths = list(dp.to(device) for dp in depths)
+        targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
         # 当使用CPU时，跳过GPU相关指令
         if device != torch.device("cpu"):
             torch.cuda.synchronize(device)
 
         model_time = time.time()
         # outputs = model(images, targets=targets)
-        imgs,outputs = model(rains=rains,depths=depths)
+        # imgs,outputs = model(rains=images,depths=depths)
+        out_list,outputs = model(rains,depths=depths)
         outputs = [{k: v.to(cpu_device) for k, v in t.items()} for t in outputs]
         model_time = time.time() - model_time
-
         res = {target["image_id"].item(): output for target, output in zip(targets, outputs)}
 
         evaluator_time = time.time()
@@ -111,29 +109,29 @@ def evaluate(model, data_loader, device):
     coco_info = coco_evaluator.coco_eval[iou_types[0]].stats.tolist()  # numpy to list
 
     # 计算IOU=0.5
-    json_file = open('pascal_voc_classes_cityscapes.json', 'r')
+    json_file = open('pascal_voc_classes_kitti.json', 'r')
     class_dict = json.load(json_file)
     json_file.close()
     category_index = {v: k for k, v in class_dict.items()}
     voc_map_info_list = []
     coco_eval = coco_evaluator.coco_eval["bbox"]
 
-    # for i in range(len(category_index)):
-    #     stats, _ = summarize(coco_eval, catId=i)
-    #     voc_map_info_list.append(" {:15}: {}".format(category_index[i + 1], stats[1]))
-
     for i in range(len(category_index)):
-        if i == 5:
-            continue
-        elif i == 6:
-            stats, _ = summarize(coco_eval, catId=5)
-            voc_map_info_list.append(" {:15}: {}".format(category_index[6 + 1], stats[1]))
-        elif i == 7:
-            stats, _ = summarize(coco_eval, catId=6)
-            voc_map_info_list.append(" {:15}: {}".format(category_index[7 + 1], stats[1]))
-        else:
-            stats, _ = summarize(coco_eval, catId=i)
-            voc_map_info_list.append(" {:15}: {}".format(category_index[i + 1], stats[1]))
+        stats, _ = summarize(coco_eval, catId=i)
+        voc_map_info_list.append(" {:15}: {}".format(category_index[i + 1], stats[1]))
+
+    # for i in range(len(category_index)):
+    #     if i == 5:
+    #         continue
+    #     elif i == 6:
+    #         stats, _ = summarize(coco_eval, catId=5)
+    #         voc_map_info_list.append(" {:15}: {}".format(category_index[6 + 1], stats[1]))
+    #     elif i == 7:
+    #         stats, _ = summarize(coco_eval, catId=6)
+    #         voc_map_info_list.append(" {:15}: {}".format(category_index[7 + 1], stats[1]))
+    #     else:
+    #         stats, _ = summarize(coco_eval, catId=i)
+    #         voc_map_info_list.append(" {:15}: {}".format(category_index[i + 1], stats[1]))
         # stats, _ = summarize(coco_eval, catId=i)
         # voc_map_info_list.append(" {:15}: {}".format(category_index[i + 1], stats[1]))
     print_voc = "\n".join(voc_map_info_list)
