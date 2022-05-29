@@ -216,7 +216,8 @@ if __name__ == "__main__":
     # 数据集的根目录(VOCdevkit)
     parser.add_argument('--data-path', default='../', help='dataset root')
     # 训练好的权重文件
-    parser.add_argument('--weights', default='./models/kitti-depth-models-3.pth', type=str, help='training weights')
+    # kitti - depth - models - 3.pth
+    parser.add_argument('--weights', default='./models/kitti-raw-models-2.pth', type=str, help='training weights')
     # batch size
     parser.add_argument('--batch_size', default=8, type=int, metavar='N', help='batch size when validation.')
 
