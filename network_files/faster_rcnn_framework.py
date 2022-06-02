@@ -40,7 +40,6 @@ class FasterRCNNBase(nn.Module):
         self.rpn = rpn
         self.roi_heads = roi_heads
         self.depth_encoder = resnet50_fpn_backbone(norm_layer=torch.nn.BatchNorm2d,trainable_layers=3)
-        # self.rde_layer1 = RDE(channel=64)
         self.deb_layer1 = DEB(channel=256, ratio=4)
         self.deb_layer2 = DEB(channel=512, ratio=4)
         self.deb_layer3 = DEB(channel=1024, ratio=4)
@@ -90,21 +89,19 @@ class FasterRCNNBase(nn.Module):
         y = depths.tensors
         for ((name, module),(name,depth_module)) in zip(self.backbone.body.items(),self.depth_encoder.body.items()):
             if name == 'layer2':
-                x, y = self.deb_layer1(x, y)
+                x = self.deb_layer1(x, y)
             elif name == 'layer3':
-                x, y = self.deb_layer2(x, y)
+                x = self.deb_layer2(x, y)
             elif name == 'layer4':
-                x, y = self.deb_layer3(x, y)
+                x = self.deb_layer3(x, y)
             x = module(x)
             y = depth_module(y)
             if name in self.backbone.body.return_layers:
                 out_name = self.backbone.body.return_layers[name]
                 out[out_name] = x
         # depth_out = OrderedDict()
-
         # depth_features = self.depth_encoder(depths.tensors)  # 将图像输入backbone得到特征图
         # for (name, module) in self.backbone.body.items():
-        #
         #     # elif name == fused_layers[1]:
         #     #     images.tensors = self.conv2(torch.cat([images.tensors, depth_features[3]], dim=1))
         #     images.tensors = module(images.tensors)
@@ -401,7 +398,7 @@ class Derain_FasterRCNN(nn.Module):
         # type: (List[Tensor], Optional[List[Dict[str, Tensor]]], Optional[List[Dict[str, Tensor]]]) -> Tuple[list, Any]
 
         if self.DerainNet is None:
-            return self.FasterRCNN(rains, targets,depths=depths)
+            return self.FasterRCNN(rains, targets)
         else:
             rain_sizes = [rain.shape[-2:] for rain in rains]
             x = self.batch_images(rains, shape_h=512, shape_w=1024, dim=3)

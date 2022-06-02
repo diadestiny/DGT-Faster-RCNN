@@ -109,29 +109,29 @@ def evaluate(model, data_loader, device):
     coco_info = coco_evaluator.coco_eval[iou_types[0]].stats.tolist()  # numpy to list
 
     # 计算IOU=0.5
-    json_file = open('pascal_voc_classes_kitti.json', 'r')
+    json_file = open('pascal_voc_classes_cityscapes.json', 'r')
     class_dict = json.load(json_file)
     json_file.close()
     category_index = {v: k for k, v in class_dict.items()}
     voc_map_info_list = []
     coco_eval = coco_evaluator.coco_eval["bbox"]
+    #
+    # for i in range(len(category_index)):
+    #     stats, _ = summarize(coco_eval, catId=i)
+    #     voc_map_info_list.append(" {:15}: {}".format(category_index[i + 1], stats[1]))
 
     for i in range(len(category_index)):
-        stats, _ = summarize(coco_eval, catId=i)
-        voc_map_info_list.append(" {:15}: {}".format(category_index[i + 1], stats[1]))
-
-    # for i in range(len(category_index)):
-    #     if i == 5:
-    #         continue
-    #     elif i == 6:
-    #         stats, _ = summarize(coco_eval, catId=5)
-    #         voc_map_info_list.append(" {:15}: {}".format(category_index[6 + 1], stats[1]))
-    #     elif i == 7:
-    #         stats, _ = summarize(coco_eval, catId=6)
-    #         voc_map_info_list.append(" {:15}: {}".format(category_index[7 + 1], stats[1]))
-    #     else:
-    #         stats, _ = summarize(coco_eval, catId=i)
-    #         voc_map_info_list.append(" {:15}: {}".format(category_index[i + 1], stats[1]))
+        if i == 5:
+            continue
+        elif i == 6:
+            stats, _ = summarize(coco_eval, catId=5)
+            voc_map_info_list.append(" {:15}: {}".format(category_index[6 + 1], stats[1]))
+        elif i == 7:
+            stats, _ = summarize(coco_eval, catId=6)
+            voc_map_info_list.append(" {:15}: {}".format(category_index[7 + 1], stats[1]))
+        else:
+            stats, _ = summarize(coco_eval, catId=i)
+            voc_map_info_list.append(" {:15}: {}".format(category_index[i + 1], stats[1]))
         # stats, _ = summarize(coco_eval, catId=i)
         # voc_map_info_list.append(" {:15}: {}".format(category_index[i + 1], stats[1]))
     print_voc = "\n".join(voc_map_info_list)

@@ -72,9 +72,9 @@ class DEB(nn.Module):
     def __init__(self, channel: int, ratio: int = 4) -> None:
         super(DEB, self).__init__()
         self.sa1 = SpatialAttention(kernel_size=3)
-        self.sa2 = SpatialAttention(kernel_size=3)
+        # self.sa2 = SpatialAttention(kernel_size=3)
         self.ca1 = ChannelAttention(channel, ratio)
-        self.ca2 = ChannelAttention(channel, ratio)
+        # self.ca2 = ChannelAttention(channel, ratio)
 
     def forward(self, input_rgb, input_depth):
         # attention level
@@ -83,11 +83,11 @@ class DEB(nn.Module):
         input_rgb_sa_ca = self.ca1(input_rgb_sa)
 
         # # feature level
-        map_depth2 = self.sa2(input_depth)
-        input_depth_sa = input_depth.mul(map_depth2) + input_depth
-        input_depth_sa_ca = self.ca2(input_depth_sa)
+        # map_depth2 = self.sa2(input_depth)
+        # input_depth_sa = input_depth.mul(map_depth2) + input_depth
+        # input_depth_sa_ca = self.ca2(input_depth_sa)
 
-        return input_rgb_sa_ca, input_depth_sa_ca
+        return input_rgb_sa_ca
 
 class RDE(nn.Module):
     """

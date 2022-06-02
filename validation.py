@@ -131,7 +131,7 @@ def main(parser_data):
     model = FasterRCNN(backbone=backbone, num_classes=parser_data.num_classes + 1)
 
     de_rain_model = DDGN_Depth_CFT_Pred()
-    de_rain_model.load_state_dict(torch.load("derain/ckpt/kitti_depth_cft_pred/iter_40000_loss1_0.01297_loss2_0.00000_lr_0.000000.pth"))
+    de_rain_model.load_state_dict(torch.load("derain/ckpt/city_depth_cft_pred/iter_40000_loss1_0.01729_loss2_0.00000_lr_0.000000.pth"))
     # de_rain_model.load_state_dict(torch.load("./backbone/iter_16500_loss1_0.00871_loss2_0.00000_lr_0.000310.pth"))
     # skip_net = Skip_Net()
     # skip_net.load_state_dict(torch.load("./save_weights/skip_net-20.pth"))
@@ -155,6 +155,7 @@ def main(parser_data):
         for images, targets,rains,depths in tqdm(val_dataset_loader, desc="validation..."):
             # 注意修改rain=rains or images
             rain = list(img.to(device) for img in rains)
+            # depth = list(img.to(device) for img in depths)
             # labels = torch.Tensor(labels)
             out_list,outputs = myModel(rains=rain)
             outputs = [{k: v.to(cpu_device) for k, v in t.items()} for t in outputs]
@@ -216,8 +217,8 @@ if __name__ == "__main__":
     # 数据集的根目录(VOCdevkit)
     parser.add_argument('--data-path', default='../', help='dataset root')
     # 训练好的权重文件
-    # kitti - depth - models - 3.pth
-    parser.add_argument('--weights', default='./models/kitti-raw-models-2.pth', type=str, help='training weights')
+    # kitti - depth - models - 3.pth、kitti-raw-models-2.pth
+    parser.add_argument('--weights', default='./save_weights/lr0.005-keepon-kitti-depth-deb_sa_only-models-5.pth', type=str, help='training weights')
     # batch size
     parser.add_argument('--batch_size', default=8, type=int, metavar='N', help='batch size when validation.')
 

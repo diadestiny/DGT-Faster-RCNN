@@ -1,5 +1,5 @@
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "4"
+os.environ["CUDA_VISIBLE_DEVICES"] = "5"
 from derain.nets import DDGN_Depth_CFT, DDGN_Depth_CFT_Pred
 from network_files.faster_rcnn_framework import Derain_FasterRCNN
 import datetime
@@ -43,7 +43,7 @@ def main(parser_data):
     print("Using {} device training.".format(device.type))
 
     # 用来保存coco_info的文件
-    results_file = "results-lr0.005-keepon-kitti-depth-{}.txt".format(datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
+    results_file = "results-lr0.0001-keepon-city-depth-deb_only-{}.txt".format(datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
 
     data_transform = {
         "train": transforms.Compose([transforms.ToTensor(),
@@ -102,14 +102,14 @@ def main(parser_data):
     # create models num_classes equal background + 20 classes
     faster_rcnn_model = create_model(num_classes=parser_data.num_classes + 1)
     de_rain_model = DDGN_Depth_CFT_Pred()
-    de_rain_model.load_state_dict(torch.load("derain/ckpt/kitti_depth_cft_pred/iter_40000_loss1_0.01297_loss2_0.00000_lr_0.000000.pth"))
+    de_rain_model.load_state_dict(torch.load("derain/ckpt/city_depth_cft_pred/iter_40000_loss1_0.01729_loss2_0.00000_lr_0.000000.pth"))
     myModel = Derain_FasterRCNN(FasterRCNN=faster_rcnn_model,DerainNet=de_rain_model)
     myModel.to(device)
     # define optimizer
     params = [p for p in myModel.parameters() if p.requires_grad]
 
     # 0.005 / 0.0001 / 0.000001
-    optimizer = torch.optim.SGD(params, lr=0.005,
+    optimizer = torch.optim.SGD(params, lr=0.0001,
                                 momentum=0.9, weight_decay=0.0005)
 
     # learning rate scheduler step_size=3
@@ -152,7 +152,7 @@ def main(parser_data):
         # coco_info = utils.evaluate(myModel, val_data_set_loader, device=device)
         mean_loss, lr = utils.train_one_epoch(myModel, optimizer, train_data_loader,
                                               device=device, epoch=epoch,
-                                              print_freq=50, warmup=True)
+                                              print_freq=50, warmup=False)
         train_loss.append(mean_loss.item())
         learning_rate.append(lr)
 
@@ -175,7 +175,7 @@ def main(parser_data):
             'optimizer': optimizer.state_dict(),
             'lr_scheduler': lr_scheduler.state_dict(),
             'epoch': epoch}
-        torch.save(save_files, "./save_weights/lr0.005-keepon-kitti-depth-models-{}.pth".format(epoch))
+        torch.save(save_files, "./save_weights/lr0.0001-keepon-city-depth-deb_only-models-{}.pth".format(epoch))
         # torch.save(de_rain_model.state_dict(), "./save_weights/de_rain-{}.pth".format(epoch))
         # torch.save(myModel.fea_similar_conv.state_dict(), "./save_weights/fea_similar_conv-{}.pth".format(epoch))
     # plot loss and lr curve
@@ -198,12 +198,12 @@ if __name__ == "__main__":
     # 训练数据集的根目录(VOCdevkit)
     parser.add_argument('--data-path', default='../', help='dataset')
     # 检测目标类别数(不包含背景)
-    parser.add_argument('--dataset', default='kitti', type=str)
-    parser.add_argument('--num-classes', default=7, type=int, help='num_classes')
+    parser.add_argument('--dataset', default='cityscapes', type=str)
+    parser.add_argument('--num-classes', default=8, type=int, help='num_classes')
     # 文件保存地址
     parser.add_argument('--output-dir', default='./save_weights', help='path where to save')
-    # 若需要接着上次训练，则指定上次训练保存权重文件地址 kitti:resNetFpn-models-41.pth  kitti_20211222_39.pth
-    parser.add_argument('--resume', default='./models/kitti-raw-models-2.pth', type=str, help='resume from checkpoint')
+    # 若需要接着上次训练，则指定上次训练保存权重文件地址 kitti:resNetFpn-models-41.pth  kitti_20211222_39.pth kitti-raw-models-2.pth
+    parser.add_argument('--resume', default='./models/cityscapes_20220219_39.pth', type=str, help='resume from checkpoint')
     # ./ old_models / 20211222_39_new_train.pth
     # save_weights
     # 指定接着从哪个epoch数开始训练
