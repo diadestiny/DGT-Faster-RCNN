@@ -131,6 +131,7 @@ def main(parser_data):
     model = FasterRCNN(backbone=backbone, num_classes=parser_data.num_classes + 1)
 
     de_rain_model = DDGN_Depth_CFT_Pred()
+    # kitti_depth_cft_pred/iter_40000_loss1_0.01297_loss2_0.00000_lr_0.000000
     de_rain_model.load_state_dict(torch.load("derain/ckpt/city_depth_cft_pred/iter_40000_loss1_0.01729_loss2_0.00000_lr_0.000000.pth"))
     # de_rain_model.load_state_dict(torch.load("./backbone/iter_16500_loss1_0.00871_loss2_0.00000_lr_0.000310.pth"))
     # skip_net = Skip_Net()
@@ -138,8 +139,7 @@ def main(parser_data):
     # 载入你自己训练好的模型权重
     weights_path = parser_data.weights
     assert os.path.exists(weights_path), "not found {} file.".format(weights_path)
-    model.load_state_dict(torch.load(weights_path, map_location=device)['model'])
-
+    model.load_state_dict(torch.load(weights_path, map_location=device)['model'],strict=True)
     # print(models)
     model.to(device)
     de_rain_model.to(device)
@@ -208,17 +208,17 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description=__doc__)
     # 数据集类型
-    parser.add_argument('--data-name', default='kitti', help='dataset name')
+    parser.add_argument('--data-name', default='cityscapes', help='dataset name')
     parser.add_argument('--val-txt-name',default='val.txt',help='val txt name')
     # 使用设备类型
     parser.add_argument('--device', default='cuda', help='device')
     # 检测目标类别数
-    parser.add_argument('--num-classes', type=int, default='7', help='number of classes')
+    parser.add_argument('--num-classes', type=int, default='8', help='number of classes')
     # 数据集的根目录(VOCdevkit)
     parser.add_argument('--data-path', default='../', help='dataset root')
     # 训练好的权重文件
-    # kitti - depth - models - 3.pth、kitti-raw-models-2.pth
-    parser.add_argument('--weights', default='./save_weights/lr0.005-keepon-kitti-depth-deb_sa_only-models-5.pth', type=str, help='training weights')
+    # kitti-raw-models-2.pth lr0.005-keepon-kitti-depth-deb_sa_only-models-5.pth city-depth-models-1
+    parser.add_argument('--weights', default='./models/cityscapes-deb-1.pth', type=str, help='training weights')
     # batch size
     parser.add_argument('--batch_size', default=8, type=int, metavar='N', help='batch size when validation.')
 

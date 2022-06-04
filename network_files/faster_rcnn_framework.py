@@ -14,7 +14,7 @@ from torchvision import transforms
 
 import monodepth2
 from backbone import resnet50_fpn_backbone, MobileNetV2
-from .depth_enhance import DEB
+from .depth_enhance import DEB, RDE
 from .roi_head import RoIHeads
 from .transform import GeneralizedRCNNTransform, _resize_image
 from .rpn_function import AnchorsGenerator, RPNHead, RegionProposalNetwork
@@ -40,6 +40,8 @@ class FasterRCNNBase(nn.Module):
         self.rpn = rpn
         self.roi_heads = roi_heads
         self.depth_encoder = resnet50_fpn_backbone(norm_layer=torch.nn.BatchNorm2d,trainable_layers=3)
+        # self.rde_layer1 = RDE(channel=3)
+        # self.rde_layer2 = RDE(channel=64)
         self.deb_layer1 = DEB(channel=256, ratio=4)
         self.deb_layer2 = DEB(channel=512, ratio=4)
         self.deb_layer3 = DEB(channel=1024, ratio=4)
