@@ -81,6 +81,7 @@ class DEB(nn.Module):
         map_depth = self.sa1(input_depth)
         input_rgb_sa = input_rgb.mul(map_depth) + input_rgb
         input_rgb_sa_ca = self.ca1(input_rgb_sa)
+        #
         # feature level
         # map_depth2 = self.sa2(input_depth)
         # input_depth_sa = input_depth.mul(map_depth2) + input_depth
