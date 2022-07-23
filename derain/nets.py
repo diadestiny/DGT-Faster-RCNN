@@ -670,17 +670,19 @@ class DDGN_Depth_CFT_Pred(nn.Module):
         return x, depth_pred
 
 
-# device = torch.device("cuda:0")
+device = torch.device("cuda:0")
+os.environ["CUDA_VISIBLE_DEVICES"] = '3'
+from thop import profile
+from thop import clever_format
+input = torch.randn(1, 3, 512, 1024)
+dps = torch.randn(1,1,512,1024)
+model = DDGN_Depth_CFT_Pred()
+# # stat(model,(3,512,1024))
+flops, params = profile(model, inputs=(input.cpu()))
+flops, params = clever_format([flops, params], "%.3f")
+print('params:',params,'flops:',flops)
 
-# from thop import profile
-# from thop import clever_format
-# input = torch.randn(1, 3, 512, 1024)
-# dps = torch.randn(1,1,512,1024)
-# model = DDGN_Depth_CFT()
-# # # stat(model,(3,512,1024))
-# flops, params = profile(model, inputs=(input.cpu(),dps.cpu()))
-# flops, params = clever_format([flops, params], "%.3f")
-# print('params:',params,'flops:',flops)
-# os.environ["CUDA_VISIBLE_DEVICES"] = '3'
-# model = DDGN_Depth_CFT_Pred()
-# model(torch.randn(1,3,512,1024))
+model = DDGN_Depth_CFT()
+flops, params = profile(model, inputs=(input.cpu(),dps.cpu()))
+flops, params = clever_format([flops, params], "%.3f")
+print('params:',params,'flops:',flops)
